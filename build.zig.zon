@@ -9,8 +9,8 @@
             .hash = "12206029de146b685739f69b10a6f08baee86b3d0a5f9a659fa2b2b66c9602078bbf",
         },
         .mach_glfw = .{
-            .url = "https://github.com/mitchellh/mach-glfw/archive/37c2995f31abcf7e8378fba68ddcf4a3faa02de0.tar.gz",
-            .hash = "12206ed982e709e565d536ce930701a8c07edfd2cfdce428683f3f2a601d37696a62",
+            .url = "https://github.com/negrel/mach-glfw/archive/a7a6cde45e16e27f32d33a0c48f5a117f5804fc6.tar.gz",
+            .hash = "1220117e8a9b47d5da3978f448f711948be0cd7d7d0feae3319750711e2cf6615ad6",
             .lazy = true,
         },
         .vaxis = .{

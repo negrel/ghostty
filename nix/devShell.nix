@@ -42,6 +42,7 @@
   libXi,
   libXinerama,
   libXrandr,
+  libxkbcommon,
   libxml2,
   spirv-cross,
   simdutf,
@@ -79,6 +80,7 @@
       libXcursor
       libXi
       libXrandr
+      libxkbcommon
 
       libadwaita
       gtk4
@@ -152,6 +154,7 @@ in
         libXi
         libXinerama
         libXrandr
+        libxkbcommon
 
         # Only needed for GTK builds
         libadwaita

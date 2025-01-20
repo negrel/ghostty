@@ -444,6 +444,8 @@ pub fn glfwWindowHints(config: *const configpkg.Config) glfw.Window.Hints {
         .cocoa_graphics_switching = builtin.os.tag == .macos,
         .cocoa_retina_framebuffer = true,
         .transparent_framebuffer = config.@"background-opacity" < 1,
+        .scale_to_monitor = true,
+        .scale_framebuffer = true,
     };
 }
 

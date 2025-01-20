@@ -542,6 +542,11 @@ pub const Surface = struct {
                 physical_x_dpi,
                 physical_y_dpi,
             });
+            const scale = monitor.getContentScale();
+            log.debug("monitor scale x={} y={}", .{
+                scale.x_scale,
+                scale.y_scale,
+            });
         }
 
         // On Mac, enable window tabbing
@@ -710,7 +715,14 @@ pub const Surface = struct {
 
     /// Returns the content scale for the created window.
     pub fn getContentScale(self: *const Surface) !apprt.ContentScale {
-        const scale = self.window.getContentScale();
+        const monitor = self.window.getMonitor() orelse monitor: {
+            break :monitor glfw.Monitor.getPrimary() orelse {
+                const scale = self.window.getContentScale();
+                return apprt.ContentScale{ .x = scale.x_scale, .y = scale.y_scale };
+            };
+        };
+
+        const scale = monitor.getContentScale();
         return apprt.ContentScale{ .x = scale.x_scale, .y = scale.y_scale };
     }
 
