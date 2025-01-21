@@ -134,6 +134,24 @@ pub fn init(self: *Window, app: *App) !void {
 
         // Set keyboard policy.
         c.gtk_layer_set_keyboard_mode(gtk_window, @intFromEnum(app.config.@"keyboard-policy"));
+
+        // Set monitor.
+        if (app.config.monitor) |monitor| {
+            const display: *c.GdkDisplay = c.gdk_display_get_default().?;
+            const monitors: *c.GListModel = c.gdk_display_get_monitors(display).?;
+            const n_monitors: c.guint = c.g_list_model_get_n_items(monitors);
+
+            log.debug("looking for monitor {s}", .{monitor.name});
+            for (0..n_monitors) |i| {
+                const mon: *c.GdkMonitor = @ptrCast(c.g_list_model_get_item(monitors, @as(c_uint, @intCast(i))));
+                const conn: [*:0]const u8 = c.gdk_monitor_get_connector(mon);
+                log.debug("gdk monitor: {s}", .{conn});
+                if (std.mem.eql(u8, std.mem.span(conn), monitor.name)) {
+                    log.debug("monitor found", .{});
+                    c.gtk_layer_set_monitor(gtk_window, mon);
+                }
+            }
+        }
     }
 
     // GTK4 grabs F10 input by default to focus the menubar icon. We want

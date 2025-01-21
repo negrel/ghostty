@@ -2261,6 +2261,9 @@ margins: Margins = .{},
 /// See https://wayland.app/protocols/wlr-layer-shell-unstable-v1#zwlr_layer_surface_v1:request:set_keyboard_interactivity
 @"keyboard-policy": KeyboardPolicy = KeyboardPolicy.none,
 
+/// The monitor the window will be placed on.
+monitor: ?Monitor = null,
+
 /// This is set by the CLI parser for deinit.
 _arena: ?ArenaAllocator = null,
 
@@ -6505,6 +6508,25 @@ pub const KeyboardPolicy = enum(c_uint) {
         }
 
         return error.InvalidValue;
+    }
+
+    pub fn formatEntry(
+        self: Self,
+        formatter: anytype,
+    ) !void {
+        _ = self;
+        _ = formatter;
+    }
+};
+
+pub const Monitor = struct {
+    const Self = @This();
+
+    name: []const u8,
+
+    pub fn parseCLI(self: *Self, alloc: Allocator, input: ?[]const u8) !void {
+        const name = input orelse return error.ValueRequired;
+        self.name = try alloc.dupe(u8, name);
     }
 
     pub fn formatEntry(
