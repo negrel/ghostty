@@ -18,6 +18,7 @@ pub const c = @cImport({
     }
     if (build_options.wayland) {
         @cInclude("gdk/wayland/gdkwayland.h");
+        @cInclude("gtk4-layer-shell/gtk4-layer-shell.h");
     }
 
     // generated header files

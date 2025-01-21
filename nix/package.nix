@@ -12,6 +12,7 @@
   libGL,
   glib,
   gtk4,
+  gtk4-layer-shell,
   libadwaita,
   wrapGAppsHook4,
   gsettings-desktop-schemas,
@@ -158,6 +159,7 @@ in
       ]
       ++ lib.optionals enableWayland [
         wayland
+        gtk4-layer-shell
       ];
 
     dontConfigure = true;

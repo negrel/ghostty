@@ -435,6 +435,9 @@ pub fn add(
                 if (self.config.x11) step.linkSystemLibrary2("X11", dynamic_link_opts);
 
                 if (self.config.wayland) {
+                    // gtk4-layer-shell MUST be linked before libwayland-client.
+                    step.linkSystemLibrary2("gtk4-layer-shell", dynamic_link_opts);
+
                     const scanner = Scanner.create(b.dependency("zig_wayland", .{}), .{
                         // We shouldn't be using getPath but we need to for now
                         // https://codeberg.org/ifreund/zig-wayland/issues/66

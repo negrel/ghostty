@@ -30,6 +30,7 @@
   glib,
   glslang,
   gtk4,
+  gtk4-layer-shell,
   libadwaita,
   adwaita-icon-theme,
   hicolor-icon-theme,
@@ -82,6 +83,7 @@
 
       libadwaita
       gtk4
+      gtk4-layer-shell
       glib
       wayland
     ];
@@ -156,6 +158,7 @@ in
         # Only needed for GTK builds
         libadwaita
         gtk4
+        gtk4-layer-shell
         glib
         wayland
         wayland-scanner

@@ -107,6 +107,35 @@ pub fn init(self: *Window, app: *App) !void {
     c.gtk_widget_add_css_class(@ptrCast(gtk_window), "window");
     c.gtk_widget_add_css_class(@ptrCast(gtk_window), "terminal-window");
 
+    // GTK layer shell.
+    if (app.config.layer != null) {
+        c.gtk_layer_init_for_window(gtk_window);
+        c.gtk_layer_set_layer(gtk_window, @intFromEnum(app.config.layer.?));
+
+        // Set anchors.
+        {
+            var it = app.config.anchors.edges.iterator();
+            while (it.next()) |edge| {
+                c.gtk_layer_set_anchor(gtk_window, @intFromEnum(edge), @intFromBool(true));
+            }
+        }
+
+        // Set margins.
+        {
+            const margins = app.config.margins;
+            c.gtk_layer_set_margin(gtk_window, @intFromEnum(configpkg.Config.Edge.top), margins.top);
+            c.gtk_layer_set_margin(gtk_window, @intFromEnum(configpkg.Config.Edge.right), margins.right);
+            c.gtk_layer_set_margin(gtk_window, @intFromEnum(configpkg.Config.Edge.bottom), margins.bottom);
+            c.gtk_layer_set_margin(gtk_window, @intFromEnum(configpkg.Config.Edge.left), margins.left);
+        }
+
+        // Set exclusive zone.
+        c.gtk_layer_set_exclusive_zone(gtk_window, @as(c_int, app.config.@"exclusive-zone"));
+
+        // Set keyboard policy.
+        c.gtk_layer_set_keyboard_mode(gtk_window, @intFromEnum(app.config.@"keyboard-policy"));
+    }
+
     // GTK4 grabs F10 input by default to focus the menubar icon. We want
     // to disable this so that terminal programs can capture F10 (such as htop)
     c.gtk_window_set_handle_menubar_accel(gtk_window, 0);

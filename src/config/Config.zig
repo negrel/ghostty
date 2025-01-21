@@ -2241,6 +2241,26 @@ term: []const u8 = "xterm-ghostty",
 /// This only works on macOS since only macOS has an auto-update feature.
 @"auto-update-channel": ?build_config.ReleaseChannel = null,
 
+/// Surface layer as defined in the wlr-layer-shell extension.
+/// See https://wayland.app/protocols/wlr-layer-shell-unstable-v1#zwlr_layer_shell_v1:enum:layer
+layer: ?Layer = null,
+
+/// Anchor surface to monitor edges as defined in the wlr-layer-shell extension.
+/// See https://wayland.app/protocols/wlr-layer-shell-unstable-v1#zwlr_layer_surface_v1:enum:anchor
+anchors: Anchors = .{},
+
+/// Surface margins from anchor points as defined in the wlr-layer-shell extension.
+/// See https://wayland.app/protocols/wlr-layer-shell-unstable-v1#zwlr_layer_surface_v1:enum:anchor
+margins: Margins = .{},
+
+/// Mark surface as non occludable as defined in the wlr-layer-shell extension.
+/// See https://wayland.app/protocols/wlr-layer-shell-unstable-v1#zwlr_layer_surface_v1:request:set_exclusive_zone
+@"exclusive-zone": i32 = 0,
+
+/// Change keyboard policy of surface as defined in the wlr-layer-shell extension.
+/// See https://wayland.app/protocols/wlr-layer-shell-unstable-v1#zwlr_layer_surface_v1:request:set_keyboard_interactivity
+@"keyboard-policy": KeyboardPolicy = KeyboardPolicy.none,
+
 /// This is set by the CLI parser for deinit.
 _arena: ?ArenaAllocator = null,
 
@@ -6326,6 +6346,174 @@ pub const WindowPadding = struct {
 pub const GtkGskRenderer = enum {
     default,
     opengl,
+};
+
+/// See wlr-layer.
+pub const Layer = enum(c_uint) {
+    background = 0,
+    bottom = 1,
+    overlay = 2,
+    top = 3,
+
+    pub fn parseCLI(input: ?[]const u8) !Layer {
+        const layer = input orelse return error.ValueRequired;
+
+        if (std.mem.eql(u8, layer, "background")) {
+            return Layer.background;
+        }
+        if (std.mem.eql(u8, layer, "bottom")) {
+            return Layer.bottom;
+        }
+        if (std.mem.eql(u8, layer, "overlay")) {
+            return Layer.overlay;
+        }
+        if (std.mem.eql(u8, layer, "top")) {
+            return Layer.top;
+        }
+
+        return error.InvalidValue;
+    }
+};
+
+/// See anchors.
+pub const Edge = enum(c_uint) {
+    left = 0,
+    right,
+    top,
+    bottom,
+
+    pub fn parseCLI(input: ?[]const u8) !Edge {
+        const edge = input orelse return error.ValueRequired;
+        const trimmed = std.mem.trim(u8, edge, " ");
+        if (std.mem.eql(u8, trimmed, "top")) {
+            return Edge.top;
+        } else if (std.mem.eql(u8, edge, "bottom")) {
+            return Edge.bottom;
+        } else if (std.mem.eql(u8, edge, "left")) {
+            return Edge.left;
+        } else if (std.mem.eql(u8, edge, "right")) {
+            return Edge.right;
+        }
+
+        return error.InvalidValue;
+    }
+};
+
+/// See anchors.
+pub const Anchors = struct {
+    const Self = @This();
+
+    edges: std.EnumSet(Edge) = std.EnumSet(Edge).initEmpty(),
+
+    pub fn parseCLI(input: ?[]const u8) !Self {
+        const edges_list = input orelse return error.ValueRequired;
+        var result: std.EnumSet(Edge) = std.EnumSet(Edge).initEmpty();
+
+        var it = std.mem.split(u8, edges_list, ",");
+        while (it.next()) |a| {
+            const edge = try Edge.parseCLI(a);
+            result.insert(edge);
+        }
+
+        return .{ .edges = result };
+    }
+
+    pub fn formatEntry(
+        self: Self,
+        formatter: anytype,
+    ) !void {
+        _ = self;
+        _ = formatter;
+    }
+
+    pub fn clone(self: *const Self, _: Allocator) error{}!Self {
+        return self.*;
+    }
+};
+
+/// See margin.
+pub const Margins = packed struct {
+    const Self = @This();
+
+    top: u16 = 0,
+    right: u16 = 0,
+    bottom: u16 = 0,
+    left: u16 = 0,
+
+    pub fn parseCLI(input: ?[]const u8) !Self {
+        const margins = input orelse return error.ValueRequired;
+
+        var result: Self = .{};
+
+        var it = std.mem.split(u8, margins, ",");
+        var i: i32 = 0;
+        while (it.next()) |m| {
+            const margin = try std.fmt.parseInt(u8, m, 10);
+            switch (i) {
+                0 => {
+                    result.top = margin;
+                    result.right = margin;
+                    result.bottom = margin;
+                    result.left = margin;
+                },
+                1 => {
+                    result.right = margin;
+                    result.left = margin;
+                },
+                2 => {
+                    result.bottom = margin;
+                },
+                3 => {
+                    result.left = margin;
+                },
+                else => return error.InvalidValue,
+            }
+
+            i += 1;
+        }
+
+        return result;
+    }
+
+    pub fn formatEntry(
+        self: Self,
+        formatter: anytype,
+    ) !void {
+        _ = self;
+        _ = formatter;
+    }
+};
+
+pub const KeyboardPolicy = enum(c_uint) {
+    const Self = @This();
+
+    none = 0,
+    exclusive = 1,
+    on_demand = 2,
+
+    pub fn parseCLI(input: ?[]const u8) !Self {
+        const policy = input orelse return error.ValueRequired;
+
+        if (std.mem.eql(u8, policy, "none")) {
+            return Self.none;
+        }
+        if (std.mem.eql(u8, policy, "exclusive")) {
+            return Self.exclusive;
+        }
+        if (std.mem.eql(u8, policy, "on_demand")) {
+            return Self.on_demand;
+        }
+
+        return error.InvalidValue;
+    }
+
+    pub fn formatEntry(
+        self: Self,
+        formatter: anytype,
+    ) !void {
+        _ = self;
+        _ = formatter;
+    }
 };
 
 test "parse duration" {
