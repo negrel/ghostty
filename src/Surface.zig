@@ -570,8 +570,8 @@ pub fn init(
     // Set a minimum size that is cols=10 h=4. This matches Mac's Terminal.app
     // but is otherwise somewhat arbitrary.
 
-    const min_window_width_cells: u32 = 10;
-    const min_window_height_cells: u32 = 4;
+    const min_window_width_cells: u32 = 1;
+    const min_window_height_cells: u32 = 1;
 
     try rt_app.performAction(
         .{ .surface = self },

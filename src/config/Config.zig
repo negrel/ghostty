@@ -2255,7 +2255,7 @@ margins: Margins = .{},
 
 /// Mark surface as non occludable as defined in the wlr-layer-shell extension.
 /// See https://wayland.app/protocols/wlr-layer-shell-unstable-v1#zwlr_layer_surface_v1:request:set_exclusive_zone
-@"exclusive-zone": i32 = 0,
+@"exclusive-zone": bool = false,
 
 /// Change keyboard policy of surface as defined in the wlr-layer-shell extension.
 /// See https://wayland.app/protocols/wlr-layer-shell-unstable-v1#zwlr_layer_surface_v1:request:set_keyboard_interactivity
@@ -3631,8 +3631,8 @@ pub fn finalize(self: *Config) !void {
     self.@"minimum-contrast" = @min(21, @max(1, self.@"minimum-contrast"));
 
     // Minimmum window size
-    if (self.@"window-width" > 0) self.@"window-width" = @max(10, self.@"window-width");
-    if (self.@"window-height" > 0) self.@"window-height" = @max(4, self.@"window-height");
+    if (self.@"window-width" > 0) self.@"window-width" = @max(1, self.@"window-width");
+    if (self.@"window-height" > 0) self.@"window-height" = @max(1, self.@"window-height");
 
     // If URLs are disabled, cut off the first link. The first link is
     // always the URL matcher.

@@ -130,7 +130,9 @@ pub fn init(self: *Window, app: *App) !void {
         }
 
         // Set exclusive zone.
-        c.gtk_layer_set_exclusive_zone(gtk_window, @as(c_int, app.config.@"exclusive-zone"));
+        if (app.config.@"exclusive-zone") {
+            c.gtk_layer_auto_exclusive_zone_enable(gtk_window);
+        }
 
         // Set keyboard policy.
         c.gtk_layer_set_keyboard_mode(gtk_window, @intFromEnum(app.config.@"keyboard-policy"));
