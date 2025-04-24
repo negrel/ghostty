@@ -46,3 +46,11 @@ pub fn setMargin(window: *gtk.Window, edge: ShellEdge, margin_size: c_int) void 
 pub fn setKeyboardMode(window: *gtk.Window, mode: KeyboardMode) void {
     c.gtk_layer_set_keyboard_mode(@ptrCast(window), @intFromEnum(mode));
 }
+
+pub fn enableAutoExclusiveZone(window: *gtk.Window) void {
+    c.gtk_layer_auto_exclusive_zone_enable(@ptrCast(window));
+}
+
+pub fn setMonitor(window: *gtk.Window, mon: *anyopaque) void {
+    c.gtk_layer_set_monitor(@ptrCast(window), @ptrCast(mon));
+}
