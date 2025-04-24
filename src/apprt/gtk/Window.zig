@@ -16,6 +16,7 @@ const gio = @import("gio");
 const glib = @import("glib");
 const gobject = @import("gobject");
 const gtk = @import("gtk");
+const gtk4_layer_shell = @import("gtk4-layer-shell");
 
 const build_config = @import("../../build_config.zig");
 const configpkg = @import("../../config.zig");
@@ -165,6 +166,53 @@ pub fn init(self: *Window, app: *App) !void {
     gtk_window.setDefaultSize(1000, 600);
     gtk_widget.addCssClass("window");
     gtk_widget.addCssClass("terminal-window");
+
+    // GTK layer shell.
+    if (app.config.layer != null) {
+        gtk4_layer_shell.initForWindow(gtk_window);
+        gtk4_layer_shell.setLayer(gtk_window, @enumFromInt(@intFromEnum(app.config.layer.?)));
+        // Set anchors.
+        {
+            var it = app.config.anchors.edges.iterator();
+            while (it.next()) |edge| {
+                gtk4_layer_shell.setAnchor(gtk_window, @enumFromInt(@intFromEnum(edge)), true);
+            }
+        }
+
+        // Set margins.
+        {
+            const margins = app.config.margins;
+            gtk4_layer_shell.setMargin(gtk_window, @enumFromInt(@intFromEnum(configpkg.Config.Edge.top)), margins.top);
+            gtk4_layer_shell.setMargin(gtk_window, @enumFromInt(@intFromEnum(configpkg.Config.Edge.right)), margins.right);
+            gtk4_layer_shell.setMargin(gtk_window, @enumFromInt(@intFromEnum(configpkg.Config.Edge.bottom)), margins.bottom);
+            gtk4_layer_shell.setMargin(gtk_window, @enumFromInt(@intFromEnum(configpkg.Config.Edge.left)), margins.left);
+        }
+
+        // Set exclusive zone.
+        if (app.config.@"exclusive-zone") {
+            gtk4_layer_shell.enableAutoExclusiveZone(gtk_window);
+        }
+
+        // Set keyboard policy.
+        gtk4_layer_shell.setKeyboardMode(gtk_window, @enumFromInt(@intFromEnum(app.config.@"keyboard-policy")));
+
+        // Set monitor.
+        if (app.config.monitor) |monitor| {
+            const display: *gdk.Display = gdk.Display.getDefault().?;
+            const monitors: *gio.ListModel = gdk.Display.getMonitors(display);
+            const n_monitors: usize = gio.ListModel.getNItems(monitors);
+
+            log.debug("looking for monitor {s}", .{monitor.name});
+            for (0..n_monitors) |i| {
+                const mon: *gdk.Monitor = @ptrCast(gio.ListModel.getItem(monitors, @as(c_uint, @intCast(i))));
+                const conn: ?[*:0]const u8 = gdk.Monitor.getConnector(mon);
+                if (conn != null and std.mem.eql(u8, std.mem.span(conn.?), monitor.name)) {
+                    log.debug("monitor found", .{});
+                    gtk4_layer_shell.setMonitor(gtk_window, mon);
+                }
+            }
+        }
+    }
 
     // GTK4 grabs F10 input by default to focus the menubar icon. We want
     // to disable this so that terminal programs can capture F10 (such as htop)
@@ -325,21 +373,23 @@ pub fn init(self: *Window, app: *App) !void {
     // In debug we show a warning and apply the 'devel' class to the window.
     // This is a really common issue where people build from source in debug and performance is really bad.
     if (comptime std.debug.runtime_safety) {
-        const warning_box = gtk.Box.new(.vertical, 0);
-        const warning_text = i18n._("⚠️ You're running a debug build of Ghostty! Performance will be degraded.");
-        if (adw_version.supportsBanner()) {
-            const banner = adw.Banner.new(warning_text);
-            banner.setRevealed(1);
-            warning_box.append(banner.as(gtk.Widget));
-        } else {
-            const warning = gtk.Label.new(warning_text);
-            warning.as(gtk.Widget).setMarginTop(10);
-            warning.as(gtk.Widget).setMarginBottom(10);
-            warning_box.append(warning.as(gtk.Widget));
+        if (app.config.layer == null) {
+            const warning_box = gtk.Box.new(.vertical, 0);
+            const warning_text = i18n._("⚠️ You're running a debug build of Ghostty! Performance will be degraded.");
+            if (adw_version.supportsBanner()) {
+                const banner = adw.Banner.new(warning_text);
+                banner.setRevealed(1);
+                warning_box.append(banner.as(gtk.Widget));
+            } else {
+                const warning = gtk.Label.new(warning_text);
+                warning.as(gtk.Widget).setMarginTop(10);
+                warning.as(gtk.Widget).setMarginBottom(10);
+                warning_box.append(warning.as(gtk.Widget));
+            }
+            gtk_widget.addCssClass("devel");
+            warning_box.as(gtk.Widget).addCssClass("background");
+            box.append(warning_box.as(gtk.Widget));
         }
-        gtk_widget.addCssClass("devel");
-        warning_box.as(gtk.Widget).addCssClass("background");
-        box.append(warning_box.as(gtk.Widget));
     }
 
     // Setup our toast overlay if we have one

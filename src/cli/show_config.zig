@@ -78,6 +78,7 @@ pub fn run(alloc: Allocator) !u8 {
     // For some reason `std.fmt.format` isn't working here but it works in
     // tests so we just do configfmt.format.
     const stdout = std.io.getStdOut().writer();
+    @setEvalBranchQuota(4096);
     try configfmt.format("", .{}, stdout);
     return 0;
 }
