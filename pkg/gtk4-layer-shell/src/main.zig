@@ -64,3 +64,11 @@ pub fn setKeyboardMode(window: *gtk.Window, mode: KeyboardMode) void {
 pub fn setNamespace(window: *gtk.Window, name: [:0]const u8) void {
     c.gtk_layer_set_namespace(@ptrCast(window), name.ptr);
 }
+
+pub fn enableAutoExclusiveZone(window: *gtk.Window) void {
+    c.gtk_layer_auto_exclusive_zone_enable(@ptrCast(window));
+}
+
+pub fn setMonitor(window: *gtk.Window, mon: *anyopaque) void {
+    c.gtk_layer_set_monitor(@ptrCast(window), @ptrCast(mon));
+}
