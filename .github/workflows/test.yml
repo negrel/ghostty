@@ -406,7 +406,7 @@ jobs:
       ZIG_GLOBAL_CACHE_DIR: /zig/global-cache
     steps:
       - name: Download Source Tarball Artifacts
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
           name: source-tarball
       - name: Extract tarball
@@ -969,7 +969,7 @@ jobs:
         uses: namespacelabs/nscloud-setup-buildx-action@01628ae51ea5d6b0c90109c7dccbf511953aff29 # v0.0.18
 
       - name: Download Source Tarball Artifacts
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
           name: source-tarball
 
